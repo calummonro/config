@@ -16,13 +16,14 @@ nnoremap <leader>ev :e ~/.config/nvim/init.vim<cr>
 nnoremap <leader>n :bn<cr>
 nnoremap <leader>N :bp<cr>
 
-nnoremap <leader>l :ALENext<cr>
-nnoremap <leader>L :ALEPrevious<cr>
+nnoremap <leader>ln :ALENext<cr>
+nnoremap <leader>lN :ALEPrevious<cr>
+nnoremap <leader>ll :ALEDetail<cr>
+
 " Use <tab> to cycle through deocomplete completions
 inoremap <expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
 
 nnoremap <leader>t :e ~/.todo<cr>
-nnoremap <leader>0 :set hlsearch!<cr>
 
 " Diff-ing
 nnoremap <leader>d :windo diffthis<cr>
@@ -52,6 +53,13 @@ set shiftwidth=2
 set softtabstop=2
 set tabstop=2
 set expandtab
+
+" Persistent undo
+set undofile
+set undodir=$HOME/.vim/undo
+
+set undolevels=1000
+set undoreload=10000
 
 call plug#begin('~/.vim/plugged')
 
@@ -107,12 +115,13 @@ Plug 'kaicataldo/material.vim'
 Plug 'tpope/vim-fugitive'
 Plug 'airblade/vim-gitgutter'
 
-
 " post install (yarn install | npm install) then load plugin only for editing supported files
 Plug 'prettier/vim-prettier', {
   \ 'do': 'yarn install',
   \ 'for': ['javascript', 'typescript', 'css', 'less', 'scss', 'json', 'graphql', 'markdown', 'vue', 'yaml', 'html'] }
 
+" Markdown
+Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app & yarn install'  }
 call plug#end()
 
 " Theme
@@ -154,6 +163,7 @@ let g:deoplete#omni#functions.javascript = [
 set completeopt=longest,menuone
 let g:deoplete#sources = {}
 let g:deoplete#sources['javascript'] = ['file', 'ternjs']
+let g:deoplete#sources#flow#flow_bin = 'flow'
 let g:tern#command = ['tern']
 let g:tern#arguments = ['--persistent'] 
 
@@ -168,40 +178,34 @@ let g:mta_filetypes = {
 \}
 
 let g:ale_linters = {
-\ 'javascript': ['eslint'],
+\ 'javascript': ['eslint', 'flow'],
 \}
 
 let g:ale_fixers = {
 \   'javascript': ['eslint'],
 \}
 
+let g:ale_completion_enabled = 1
 let g:ale_fix_on_save = 0
 
 let g:airline#extensions#tabline#enabled = 1
 let g:airline_theme = 'material'
-
-"if has("nvim")
-"  " Make escape work in the Neovim terminal.
-""  tnoremap <C-[> <C-\><C-n>
-"
-"  " Make navigation into and out of Neovim terminal splits nicer.
-""  tnoremap <C-h> <C-\><C-N><C-w>h
-""  tnoremap <C-j> <C-\><C-N><C-w>j
-""  tnoremap <C-k> <C-\><C-N><C-w>k
-""  tnoremap <C-l> <C-\><C-N><C-w>l
-"
-"  " Prefer Neovim terminal insert mode to normal mode.
-"  "autocmd BufEnter term://* startinsert
-"endif
 
 " Introduced for flow package
 let g:LanguageClient_serverCommands = {
     \ 'javascript': ['flow-language-server', '--stdio'],
     \ }
 
-" Persistent undo
-set undofile
-set undodir=$HOME/.vim/undo
+" Use local node_modules flow binary
+function! StrTrim(txt)
+  return substitute(a:txt, '^\n*\s*\(.\{-}\)\n*\s*$', '\1', '')
+endfunction
 
-set undolevels=1000
-set undoreload=10000
+let g:flow_path = StrTrim(system('PATH=$(npm bin):$PATH && which flow'))
+
+if g:flow_path != 'flow not found'
+  let g:deoplete#sources#flow#flow_bin = g:flow_path
+endif
+
+let g:python_host_prog = '/usr/local/bin/python'
+let g:python3_host_prog = '/usr/local/bin/python3'
