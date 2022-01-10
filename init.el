@@ -18,10 +18,7 @@
 ;;; Core
 (auto-save-mode -1)
 
-(setq ns-right-alternate-modifier (quote none)) ; Let me use right-alt for "#" character
-
-;;(setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin"))
-;;(setq exec-path (append exec-path '("/usr/local/bin")))
+(setq ns-right-alternate-modifier (quote none)) ; Use right-alt for "#"
 
 ;;; Package management
 (require 'package)
@@ -39,7 +36,10 @@
     clojure-mode
     cider
     flycheck-clj-kondo
-    paredit))
+    paredit
+    neotree
+    magit
+    evil))
 
 (dolist (p my-packages)
   (unless (package-installed-p p)
