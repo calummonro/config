@@ -76,7 +76,7 @@
 (load-theme 'base16-nord t)
 
 (add-to-list 'default-frame-alist
-             '(font . "Fantasque Sans Mono-22"))
+             '(font . "Fantasque Sans Mono-16"))
 
 
 ;;; Shortcuts (not working yet)
@@ -119,6 +119,8 @@
 ;;; cider
 (setq cider-font-lock-dynamically '(macro core function var))
 (setq cider-repl-pop-to-buffer-on-connect nil)
+
+(add-hook 'before-save-hook 'cider-format-buffer t t)
 
 ;;; paredit
 (autoload 'enable-paredit-mode "paredit" "Turn on pseudo-structural editing of Lisp code." t)
