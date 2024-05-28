@@ -1,5 +1,6 @@
-
 ;;; TODO
+;; look into clj-refactor
+;; look into cider-eval-sexp-fu
 ;; Create shortcut for reloading init.el/config
 ;; Set up persistent undo
 ;; Add user shortcuts (e.g. leader key) - General.el? (linting, file explorer etc)
@@ -26,10 +27,12 @@
 (package-initialize)
 
 (defvar my-packages
-  '(base16-theme
+  '(use-package
+    base16-theme
     better-defaults
     rainbow-delimiters
     general
+    which-key
     projectile
     counsel
     company
@@ -69,6 +72,7 @@
 ;;; Theme
 (tool-bar-mode 0)
 (scroll-bar-mode 0)
+(setq inhibit-startup-screen t)
 
 (setq base16-distinct-fringe-background nil)
 (setq base16-highlight-mode-line "contrast")
@@ -78,30 +82,29 @@
 (add-to-list 'default-frame-alist
              '(font . "Fantasque Sans Mono-16"))
 
+(use-package which-key
+  :ensure t
+  :config
+  (which-key-mode))
 
-;;; Shortcuts (not working yet)
-(require 'general)
-;; * Global Keybindings
-;; `general-define-key' acts like `global-set-key' when :keymaps is not
-;; specified (because ":keymaps 'global" is the default)
-;; kbd is not necessary and arbitrary amount of key def pairs are allowed
-(general-define-key
- "C-c e" '(find-file "~/.emacs.d/init.el"))
+(use-package counsel
+  :ensure t
+  :bind (("C-s" . 'swiper)
+	 ("M-x" . 'counsel-M-x)
+	 ("C-x C-f" . 'counsel-find-file))
+  :init
+  (setq ivy-use-virtual-buffers t
+	ivy-count-format "(%d/%d) ")
+  :config
+  (ivy-mode 1))
 
-;;; ivy
-(ivy-mode 1)
-(setq ivy-use-virtual-buffers t)
-(setq ivy-count-format "(%d/%d) ")
-
-(global-set-key (kbd "C-s") 'swiper)
-(global-set-key (kbd "M-x") 'counsel-M-x)
-(global-set-key (kbd "C-x C-f") 'counsel-find-file)
-
-;;; projectile
-(projectile-mode +1)
-(define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
-(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-;(setq projectile-completion-system 'ivy) ; from old config, not sure if required
+(use-package projectile
+  :ensure t
+  :bind (:map projectile-mode-map
+              ("s-p" . projectile-command-map)
+              ("C-c p" . projectile-command-map))
+  :init
+  (projectile-mode +1))
 
 ;; Company
 (global-company-mode)
@@ -117,8 +120,7 @@
 ;;; Clojure(Script) / LISP
 
 ;;; cider
-(setq cider-font-lock-dynamically '(macro core function var))
-(setq cider-repl-pop-to-buffer-on-connect nil)
+
 
 (add-hook 'before-save-hook 'cider-format-buffer t t)
 
@@ -132,6 +134,25 @@
 (add-hook 'scheme-mode-hook                       #'enable-paredit-mode)
 (add-hook 'clojure-mode-hook                      #'enable-paredit-mode)
 (add-hook 'clojurescript-mode-hook                #'enable-paredit-mode)
+
+(use-package clojure-mode
+  :ensure t
+  :mode (("\\.clj\\'" . clojure-mode)
+	 ("\\.cljs\\'" . clojure-mode)
+         ("\\.edn\\'" . clojure-mode)))
+
+(use-package cider
+  :ensure t
+  :defer t
+  :config
+  (setq cider-font-lock-dynamically '(macro core function var)
+	cider-repl-pop-to-buffer-on-connect nil
+	cider-repl-use-clojure-font-lock
+	cider-font-lock-dynamically
+	nrepl-hide-special-buffers
+	cider-overlays-use-font-lock)
+  (cider-repl-toggle-pretty-printing))
+
 
 ;; flycheck-clj-kondo
 (require 'flycheck-clj-kondo)
